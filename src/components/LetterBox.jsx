@@ -9,8 +9,8 @@ function LetterBox({ letter, green, yellow, gray }) {
 
   return (
     <div
-      className={`w-16 h-16 border-2 border-black text-4xl 
-      flex items-center justify-center font-bold uppercase ${bgColor}`}
+      className={`w-12 h-12  text-3xl 
+      flex items-center justify-center font-bold uppercase rounded-md  ${bgColor}`}
     >
       {letter}
     </div>

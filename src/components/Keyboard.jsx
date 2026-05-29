@@ -10,9 +10,10 @@ function Keyboard({ onKeyPress, letterStatuses }) {
     const hasBeenUsed = letterStatuses[normalizedKey]
     
     if (hasBeenUsed) {
-      return '!bg-gray-[#1a1a1a] text-[#737070]'
+      return '!bg-[#1a1a1a] text-[#737070]'
     }
     return '!bg-[#303030] text-white'
+    
   }
 
   const handleClick = (key) => {
@@ -26,9 +27,9 @@ function Keyboard({ onKeyPress, letterStatuses }) {
   }
 
   return (
-    <div className="flex flex-col items-center gap-1 mt-2 mb-2">
+    <div className="flex flex-col items-center gap-3 mt-2 mb-2">
       {rows.map((row, rowIndex) => (
-        <div key={rowIndex} className="flex gap-1">
+        <div key={rowIndex} className="flex gap-4">
           {row.map((key) => {
             const isSpecial = key === 'ENTER' || key === 'BACK'
             return (

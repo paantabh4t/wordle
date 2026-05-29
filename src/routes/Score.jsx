@@ -1,4 +1,5 @@
-import { useLocation, useNavigate, Navigate } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
+import "./Lvl.css"
 
 function Score() {
   const { state } = useLocation()
@@ -11,22 +12,29 @@ function Score() {
 
   const { result } = state
 
-  function handlePlayAgain (){
-    navigate("/")
+  const isWin = result === "win"
+  const levelReached = isWin ? null : result
+
+  function handlePlayAgain() {
+    navigate("/lvl1")
   }
 
   return (
-    <>
-      <div>
-        <h1 className="text-5xl font-bold">
-          {result === "win" ? "🎉 You Won!" : "🥲 You Lost"}
-        </h1>
-      </div>
-      <div>
-        <button className="m-4 p-4 border-white hover:bg-gray-700 text-2xl font-semibold"
-        onClick={handlePlayAgain}>Play Again</button>
-      </div>
-    </>  
+    <div className="container">
+      <h1 className="text-5xl font-bold text-gray-400">
+        {isWin ? "🎉 You Won!" : "🥲 You Lost"}
+      </h1>
+
+      {!isWin && (
+        <p className="text-xl text-gray-400">
+          You made it to <strong>Level {levelReached}</strong> before running out of guesses.
+        </p>
+      )}
+
+      <button className="button" onClick={handlePlayAgain}>
+        Play Again
+      </button>
+    </div>
   )
 }
 

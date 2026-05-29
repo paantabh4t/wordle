@@ -12,9 +12,16 @@ const wordLists = {
   9: nineletters,
 }
 
-export function isValidGuess(word, length) {
+export function getRandomWord(length) {
   const list = wordLists[length]
-  const validSet = new Set(list)
-  return validSet.has(word.toLowerCase())
+
+  const word = list[Math.floor(Math.random() * list.length)]
+
+  const letterObject = {}
+  for (let letter of word) {
+    letterObject[letter] = (letterObject[letter] || 0) + 1
+  }
+  console.log("Word is :", word)
+
+  return { word, letterObject }
 }
-/*delay at correct guess & add pop up for next round*/
