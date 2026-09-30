@@ -1,34 +1,27 @@
+// Returns one status per letter: "green", "yellow" or "gray"
 export function calculateLetterStatuses(word, correctWord) {
   const letterCount = {}
 
-  for (let char of correctWord) {
+  for (const char of correctWord) {
     letterCount[char] = (letterCount[char] || 0) + 1
   }
 
-  const letters = word.split("")
-
-  const result = letters.map((letter, index) => {
+  // Greens first, so they claim their letters before any yellows
+  const statuses = [...word].map((letter, index) => {
     if (letter === correctWord[index]) {
       letterCount[letter]--
-      return { letter, status: "green" }
+      return "green"
     }
-    return { letter, status: "none" }
-    })
+    return null
+  })
 
-  for (let i = 0; i < result.length; i++) {
-    const { letter, status } = result[i]
-    if (status === "none" && letterCount[letter] > 0) {
-      result[i].status = "yellow"
+  return statuses.map((status, index) => {
+    if (status) return status
+    const letter = word[index]
+    if (letterCount[letter] > 0) {
       letterCount[letter]--
+      return "yellow"
     }
-  }
-
-  for (let i = 0; i < result.length; i++) {
-    if (result[i].status === "none") {
-      result[i].status = "gray"
-    }
-  }
-
-  return result
+    return "gray"
+  })
 }
-

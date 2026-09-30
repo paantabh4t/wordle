@@ -1,21 +1,19 @@
-# React + Vite
+# Impossible Wordle
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A Wordle variant with five levels. Word length grows each level (5 → 9 letters),
+you get 6 guesses per level, and any letter you've used goes dark on the keyboard
+whether or not it was in the word.
 
-Currently, two official plugins are available:
+## Run it
 
-<<<<<<< HEAD
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-=======
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
->>>>>>> 311e61f (from scratch, also added levels)
+```bash
+npm install
+npm run dev
+```
 
-## React Compiler
+## Structure
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- `src/routes/Level.jsx` – the game, shared by all five levels (`/lvl1` … `/lvl5`)
+- `src/levels.js` – word length per level and number of guesses
+- `src/data/` – word lists
+- `src/utils/` – letter colouring, random word, guess validation

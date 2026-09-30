@@ -1,29 +1,18 @@
 import WordLine from './WordLine'
 
-function WordGrid({ guessedWords, currentWord, correctWord, correctLetterObject, wordCount, gameOver, wordLength = 5 }) {
+function WordGrid({ guesses, current, correctWord, wordLength, totalGuesses }) {
   return (
-    <div className="flex flex-col items-center gap-y-3">
-      {guessedWords.map((word, index) => {
-        if (index === wordCount) {
-          return (
-            <WordLine
-              word={currentWord}
-              correctLetterObject={correctLetterObject}
-              correctWord={correctWord}
-              revealed={index < wordCount || gameOver}
-              wordLength={wordLength}
-              key={index}
-            />
-          )
-        }
+    <div className="flex flex-col items-center gap-y-1 sm:gap-y-3">
+      {Array.from({ length: totalGuesses }, (_, i) => {
+        const submitted = i < guesses.length
+        const word = submitted ? guesses[i] : i === guesses.length ? current : ''
         return (
           <WordLine
+            key={i}
             word={word}
             correctWord={correctWord}
-            correctLetterObject={correctLetterObject}
-            revealed={true}
+            revealed={submitted}
             wordLength={wordLength}
-            key={index}
           />
         )
       })}

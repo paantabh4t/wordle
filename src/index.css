@@ -1,7 +1,10 @@
 @import "tailwindcss";
-* {
-  box-sizing: border-box;
-  max-width: 100%;
+/* In a layer so Tailwind utilities (e.g. max-w-xl on the keyboard) can override it */
+@layer base {
+  * {
+    box-sizing: border-box;
+    max-width: 100%;
+  }
 }
 
 html, body, #root {
