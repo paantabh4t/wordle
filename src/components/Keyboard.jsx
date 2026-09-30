@@ -21,16 +21,13 @@ function Keyboard({ onKeyPress, usedLetters }) {
             return (
               <button
                 key={key}
-                // Stop the button taking focus, otherwise a later physical
-                // Enter press would "click" it a second time
-                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => handleClick(key)}
                 className={`
                   ${isSpecial ? 'flex-[1.6] text-xs' : 'flex-1'}
                   min-w-0 h-11 sm:h-10 rounded font-bold uppercase
                   hover:opacity-80 transition-opacity
                   flex items-center justify-center
-                  ${used ? '!bg-[#1a1a1a] text-[#737070]' : '!bg-[#303030] text-white'}
+                  ${used ? 'bg-[#1a1a1a] text-[#737070]' : 'bg-[#303030] text-white'}
                 `}
               >
                 {key === 'BACK' ? '⌫' : key}

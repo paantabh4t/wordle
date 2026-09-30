@@ -1,59 +1,44 @@
 import "./Home.css";
 import bgImage from "./assets/pointingbl.jpg";
 import { useNavigate } from "react-router-dom";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
-// Natural size of pointingbl.jpg and the fingertip's position inside it
+// Size of pointingbl.jpg, and where the fingertip is inside it (in image pixels)
 const IMG_W = 736;
 const IMG_H = 659;
 const FINGER_X = 415;
-const FINGER_Y = 293;
-const LIFT = 30; // raise the button above the fingertip (image pixels)
-// Must match background-position in Home.css
-const BG_POS_X = 0.5;
-const BG_POS_Y = 0.7;
-const EDGE = 8; // keep the button this far inside the screen
+const FINGER_Y = 263; // a little above the fingertip
 
 function Home() {
   const navigate = useNavigate();
-  const bodyRef = useRef(null);
-  const btnRef = useRef(null);
-  const [pos, setPos] = useState(null);
+  const [width, setWidth] = useState(window.innerWidth);
+  const [height, setHeight] = useState(window.innerHeight);
 
-  // Map the fingertip from image space to screen space (background-size: cover)
-  useLayoutEffect(() => {
-    const body = bodyRef.current;
-    const btn = btnRef.current;
-
-    function place() {
-      const w = body.clientWidth;
-      const h = body.clientHeight;
-      const scale = Math.max(w / IMG_W, h / IMG_H);
-      const offsetX = (w - IMG_W * scale) * BG_POS_X;
-      const offsetY = (h - IMG_H * scale) * BG_POS_Y;
-      const fingerX = offsetX + FINGER_X * scale;
-      const fingerY = offsetY + (FINGER_Y - LIFT) * scale;
-
-      // Button sits just left of the fingertip, slightly above it
-      const bw = btn.offsetWidth;
-      const bh = btn.offsetHeight;
-      const left = Math.min(Math.max(fingerX - bw - 6, EDGE), w - bw - EDGE);
-      const top = Math.min(Math.max(fingerY - bh / 2, EDGE), h - bh - EDGE);
-      setPos({ left, top });
+  // Re-render when the window is resized
+  useEffect(() => {
+    function handleResize() {
+      setWidth(window.innerWidth);
+      setHeight(window.innerHeight);
     }
-
-    place();
-    const observer = new ResizeObserver(place);
-    observer.observe(body);
-    return () => observer.disconnect();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // "background-size: cover" scales the image until it fills the screen...
+  const scale = Math.max(width / IMG_W, height / IMG_H);
+  // ...and "background-position: center 70%" decides how it's shifted
+  const imageLeft = (width - IMG_W * scale) * 0.5;
+  const imageTop = (height - IMG_H * scale) * 0.7;
+
+  // So on screen the fingertip is at:
+  const fingerLeft = imageLeft + FINGER_X * scale;
+  const fingerTop = imageTop + FINGER_Y * scale;
+
   return (
-    <div ref={bodyRef} className="body" style={{ backgroundImage: `url(${bgImage})` }}>
+    <div className="body" style={{ backgroundImage: `url(${bgImage})` }}>
       <button
-        ref={btnRef}
         className="btn"
-        style={pos ?? { visibility: "hidden" }}
+        style={{ left: fingerLeft, top: fingerTop }}
         onClick={() => navigate("/lvl1")}
       >
         START

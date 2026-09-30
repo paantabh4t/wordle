@@ -1,13 +1,11 @@
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getRandomWord } from '../utils/randomWord'
-import { isValidGuess, loadGuesses } from '../utils/validateGuess'
+import { isValidGuess } from '../utils/validateGuess'
 import WordGrid from '../components/WordGrid'
 import Keyboard from '../components/Keyboard'
 import { WORD_LENGTHS, TOTAL_GUESSES } from '../levels'
 import "./Lvl.css"
-
-const END_DELAY_MS = 1200 // pause so the final row can be seen before moving on
 
 function Level({ level }) {
   const wordLength = WORD_LENGTHS[level - 1]
@@ -16,57 +14,32 @@ function Level({ level }) {
   const [answer, setAnswer] = useState(() => getRandomWord(wordLength))
   const [guesses, setGuesses] = useState([])
   const [current, setCurrent] = useState("")
-  const [gameOver, setGameOver] = useState(false)
   const [message, setMessage] = useState("")
 
-  const endTimer = useRef(null)
-  const messageTimer = useRef(null)
+  // Work out win/lose from the guesses instead of storing it separately
+  const won = guesses.includes(answer)
+  const lost = !won && guesses.length === TOTAL_GUESSES
+  const gameOver = won || lost
 
-  // Every letter that has appeared in a submitted guess (keys go dark)
-  const usedLetters = useMemo(() => new Set(guesses.join("")), [guesses])
+  // Every letter that has been guessed (these keys go dark)
+  const usedLetters = new Set(guesses.join(""))
 
-  // Only reveal the answer in the console during development
+  // Show the answer in the console while developing
   useEffect(() => {
     if (import.meta.env.DEV) console.log("Word is:", answer)
   }, [answer])
 
+  // Hide the message after 1.5 seconds
   useEffect(() => {
-    loadGuesses(wordLength).catch(() => {}) // falls back to the answer list
-  }, [wordLength])
+    if (!message) return
+    const timer = setTimeout(() => setMessage(""), 1500)
+    return () => clearTimeout(timer)
+  }, [message])
 
-  useEffect(() => () => {
-    clearTimeout(endTimer.current)
-    clearTimeout(messageTimer.current)
-  }, [])
-
-  function showMessage(text, ms = 1500) {
-    clearTimeout(messageTimer.current)
-    setMessage(text)
-    messageTimer.current = setTimeout(() => setMessage(""), ms)
-  }
-
-  function handleEnter() {
-    if (current.length !== wordLength) {
-      showMessage(`Words must be ${wordLength} letters`)
-      return
-    }
-    if (!isValidGuess(current, wordLength)) {
-      showMessage("Not a valid word")
-      return
-    }
-
-    const nextGuesses = [...guesses, current]
-    setGuesses(nextGuesses)
-    setCurrent("")
-
-    const won = current === answer
-    const lost = !won && nextGuesses.length === TOTAL_GUESSES
-    if (!won && !lost) return
-
-    setGameOver(true)
-    if (lost) showMessage(`The word was ${answer.toUpperCase()}`, END_DELAY_MS)
-
-    endTimer.current = setTimeout(() => {
+  // When the game ends, wait a moment so the last row can be seen, then move on
+  useEffect(() => {
+    if (!gameOver) return
+    const timer = setTimeout(() => {
       if (lost) {
         navigate("/score", { state: { result: level, answer } })
       } else if (level < WORD_LENGTHS.length) {
@@ -74,7 +47,19 @@ function Level({ level }) {
       } else {
         navigate("/score", { state: { result: "win" } })
       }
-    }, END_DELAY_MS)
+    }, 1200)
+    return () => clearTimeout(timer) // cancelled if the game is reset
+  }, [gameOver, lost, level, answer, navigate])
+
+  function handleEnter() {
+    if (current.length !== wordLength) {
+      setMessage(`Words must be ${wordLength} letters`)
+    } else if (!isValidGuess(current, wordLength)) {
+      setMessage("Not a valid word")
+    } else {
+      setGuesses([...guesses, current])
+      setCurrent("")
+    }
   }
 
   function handleKeyPress(key) {
@@ -83,16 +68,18 @@ function Level({ level }) {
     if (key === "Enter") {
       handleEnter()
     } else if (key === "Backspace") {
-      setCurrent((c) => c.slice(0, -1))
-    } else if (/^[a-zA-Z]$/.test(key)) {
-      setCurrent((c) => (c.length < wordLength ? c + key.toLowerCase() : c))
+      setCurrent(current.slice(0, -1))
+    } else if (/^[a-zA-Z]$/.test(key) && current.length < wordLength) {
+      setCurrent(current + key.toLowerCase())
     }
   }
 
-  // No dependency array: re-subscribe each render so the handler is never stale
+  // Listen for the physical keyboard.
+  // No dependency array, so it re-subscribes every render and always sees the latest state.
   useEffect(() => {
     function handleKeyDown(e) {
-      if (e.ctrlKey || e.metaKey || e.altKey) return // don't hijack shortcuts
+      if (e.ctrlKey || e.metaKey || e.altKey) return // leave shortcuts like Ctrl+R alone
+      if (e.key === "Enter") e.preventDefault() // stop Enter also clicking a focused button
       handleKeyPress(e.key)
     }
     document.addEventListener('keydown', handleKeyDown)
@@ -100,18 +87,18 @@ function Level({ level }) {
   })
 
   function resetGame() {
-    clearTimeout(endTimer.current)
     setAnswer(getRandomWord(wordLength))
     setGuesses([])
     setCurrent("")
-    setGameOver(false)
     setMessage("")
   }
 
   return (
     <div className="game-container">
       <span className="title">WORDLE!</span>
-      <div className="h-7 text-center text-white font-semibold" aria-live="polite">{message}</div>
+      <div className="h-7 text-center text-white font-semibold">
+        {lost ? `The word was ${answer.toUpperCase()}` : message}
+      </div>
       <WordGrid
         guesses={guesses}
         current={current}
@@ -121,13 +108,8 @@ function Level({ level }) {
       />
       <Keyboard onKeyPress={handleKeyPress} usedLetters={usedLetters} />
       <div className="button-container">
-        {/* blur() so a later physical Enter doesn't re-activate the button */}
-        <button className="button" onClick={(e) => { resetGame(); e.currentTarget.blur() }}>
-          Reset Game
-        </button>
-        <button className="button" onClick={(e) => { navigate("/"); e.currentTarget.blur() }}>
-          Home
-        </button>
+        <button className="button" onClick={resetGame}>Reset Game</button>
+        <button className="button" onClick={() => navigate("/")}>Home</button>
       </div>
     </div>
   )

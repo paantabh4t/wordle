@@ -1,27 +1,29 @@
 // Returns one status per letter: "green", "yellow" or "gray"
 export function calculateLetterStatuses(word, correctWord) {
-  const letterCount = {}
+  const statuses = []
+  const unusedLetters = [] // letters of the answer not matched by a green
 
-  for (const char of correctWord) {
-    letterCount[char] = (letterCount[char] || 0) + 1
+  // Pass 1: find greens
+  for (let i = 0; i < word.length; i++) {
+    if (word[i] === correctWord[i]) {
+      statuses[i] = "green"
+    } else {
+      unusedLetters.push(correctWord[i])
+    }
   }
 
-  // Greens first, so they claim their letters before any yellows
-  const statuses = [...word].map((letter, index) => {
-    if (letter === correctWord[index]) {
-      letterCount[letter]--
-      return "green"
-    }
-    return null
-  })
+  // Pass 2: everything else is yellow (if the letter is still unused) or gray
+  for (let i = 0; i < word.length; i++) {
+    if (statuses[i] === "green") continue
 
-  return statuses.map((status, index) => {
-    if (status) return status
-    const letter = word[index]
-    if (letterCount[letter] > 0) {
-      letterCount[letter]--
-      return "yellow"
+    const index = unusedLetters.indexOf(word[i])
+    if (index !== -1) {
+      statuses[i] = "yellow"
+      unusedLetters.splice(index, 1) // each answer letter can only be used once
+    } else {
+      statuses[i] = "gray"
     }
-    return "gray"
-  })
+  }
+
+  return statuses
 }
